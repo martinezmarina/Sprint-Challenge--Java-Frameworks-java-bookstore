@@ -1,24 +1,35 @@
 package com.lambdaschool.bookstore.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambdaschool.bookstore.BookstoreApplication;
+import com.lambdaschool.bookstore.models.Author;
 import com.lambdaschool.bookstore.models.Book;
+import com.lambdaschool.bookstore.models.Section;
+import com.lambdaschool.bookstore.models.Wrote;
 import com.lambdaschool.bookstore.services.BookService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 
@@ -62,6 +73,53 @@ public class BookControllerTest
          * Note that since we are only testing bookstore data, you only need to mock up bookstore data.
          * You do NOT need to mock up user data. You can. It is not wrong, just extra work.
          */
+        bookList = new ArrayList<>();
+
+        Author a1 = new Author("John", "Mitchell");
+        Author a2 = new Author("Dan", "Brown");
+        Author a3 = new Author("Jerry", "Poe");
+        Author a4 = new Author("Wells", "Teague");
+        Author a5 = new Author("George", "Gallinger");
+        Author a6 = new Author("Ian", "Stewart");
+
+        Section s1 = new Section("Fiction");
+        Section s2 = new Section("Technology");
+        Section s3 = new Section("Travel");
+        Section s4 = new Section("Business");
+        Section s5 = new Section("Religion");
+
+
+        Book b1 = new Book("test Flatterland", "9780738206752", 2001, s1);
+        b1.setBookid(1);
+        b1.getWrotes()
+                .add(new Wrote(a6, new Book()));
+        bookList.add(b1);
+
+        Book b2 = new Book("test Digital Fortess", "9788489367012", 2007, s1);
+        b2.setBookid(2);
+        b2.getWrotes()
+                .add(new Wrote(a2, new Book()));
+        bookList.add(b2);
+
+        Book b3 = new Book("test The Da Vinci Code", "9780307474278", 2009, s1);
+        b3.setBookid(3);
+        b3.getWrotes()
+                .add(new Wrote(a2, new Book()));
+        bookList.add(b3);
+
+        Book b4 = new Book("test Essentials of Finance", "1314241651234", 0, s4);
+        b4.setBookid(4);
+        b4.getWrotes()
+                .add(new Wrote(a3, new Book()));
+        b4.getWrotes()
+                .add(new Wrote(a5, new Book()));
+        bookList.add(b4);
+
+        Book b5 = new Book("test Calling Texas Home", "1885171382134", 2000, s3);
+        b5.setBookid(5);
+        b5.getWrotes()
+                .add(new Wrote(a4, new Book()));
+        bookList.add(b5);
     }
 
     @After
@@ -74,6 +132,17 @@ public class BookControllerTest
     public void listAllBooks() throws
             Exception
     {
+        String apiUrl = "/books";
+        Mockito.when(bookService.findAll()).thenReturn(bookList);
+
+        RequestBuilder rb = MockMvcRequestBuilders.get(apiUrl).accept(MediaType.APPLICATION_JSON);
+        MvcResult r = mockMvc.perform(rb).andReturn();
+        String tr = r.getResponse().getContentAsString();
+
+        ObjectMapper mapper = new ObjectMapper();
+        String er = mapper.writeValueAsString(bookList);
+
+        assertEquals(er, tr);
     }
 
     @Test
