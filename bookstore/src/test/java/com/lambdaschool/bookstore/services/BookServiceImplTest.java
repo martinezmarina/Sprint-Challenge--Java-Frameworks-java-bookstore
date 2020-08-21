@@ -2,7 +2,9 @@ package com.lambdaschool.bookstore.services;
 
 import com.lambdaschool.bookstore.BookstoreApplication;
 import com.lambdaschool.bookstore.exceptions.ResourceNotFoundException;
+import com.lambdaschool.bookstore.models.Author;
 import com.lambdaschool.bookstore.models.Book;
+import com.lambdaschool.bookstore.models.Section;
 import com.lambdaschool.bookstore.models.Wrote;
 import org.junit.After;
 import org.junit.Before;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -28,6 +31,12 @@ public class BookServiceImplTest
     @Autowired
     private BookService bookService;
 
+    @Autowired
+    private SectionService sectionService;
+
+    @Autowired
+    private AuthorService authorService;
+
     @Before
     public void setUp() throws
             Exception
@@ -36,6 +45,10 @@ public class BookServiceImplTest
         List<Book> myList = bookService.findAll();
         for (Book b : myList){
             System.out.println(b.getBookid() + " " + b.getTitle());
+        }
+        List<Section> sectionList = sectionService.findAll();
+        for (Section s : sectionList){
+            System.out.println(s.getSectionid() + " " + s.getName());
         }
     }
 
@@ -74,9 +87,14 @@ public class BookServiceImplTest
     @Test
     public void save()
     {
-        String bookTitle = "Test Book"
-        Book b2 = new Book(bookTitle, "222222222222222", "2020");
-        b2.getWrotes().add(new Wrote(b2, "Test Author"));
+        Section travel = new Section("travel");
+        sectionService.save(travel);
+        travel.setSectionid(23);
+
+        String bookTitle = "test book";
+        Book b2 = new Book(bookTitle, "2222222222222", 2020, travel);
+
+        bookService.save(b2);
         Book addBook = bookService.save(b2);
         assertNotNull(addBook);
         assertEquals(bookTitle, addBook.getTitle());
